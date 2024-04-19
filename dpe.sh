@@ -4,24 +4,27 @@ set -eu
 
 # 脚本所在目录
 CWD=$(dirname $(readlink -f "$0"))
+
 # 相关目录
 DIR_DATA=${CWD}/data
 DIR_LOGS=${CWD}/logs
 DIR_SERVICES=${CWD}/services
+
 # 数据子目录
 DATA_DIRS=(
-    composer
-    mongodb
-    mysql5
-    redis
+    "composer"
+    "mongodb"
+    "mysql5"
+    "redis"
 )
+
 # 日志子目录
 LOGS_DIRS=(
-    mongodb
-    mysql/5
-    nginx
-    php/81/log
-    php/81/supervisor
+    "mongodb"
+    "mysql/5"
+    "nginx"
+    "php/81/log"
+    "php/81/supervisor"
 )
 
 # 输出
@@ -41,42 +44,44 @@ init_startup_files() {
     local env_file=$CWD/.env
 
     message "正在初始化 docker-compose.yml"
+
     if [[ -f $compose_file ]]; then
         message "${compose_file} 文件已存在"
     else
-        cp $compose_file_example $compose_file
+        cp "$compose_file_example" "$compose_file"
         message "${compose_file} 初始化成功"
     fi
 
     message "正在初始化 .env"
+
     if [[ -f $env_file ]]; then
         message "${env_file} 文件已存在"
     else
-        cp $env_file_example $env_file
+        cp "$env_file_example" "$env_file"
         message "${env_file} 初始化成功"
     fi
 }
 
 # 初始化 DIR_DATA
 init_data() {
-    for d in ${DATA_DIRS[@]}
+    for d in "${DATA_DIRS[@]}"
     do
         local item=$DIR_DATA/$d
         if [[ -d $item ]]; then
             message "处理目录 chmod 777 ${item}"
-            chmod 777 $item
+            chmod 777 "$item"
         fi
     done
 }
 
 # 初始化 DIR_LOGS
 init_logs() {
-    for d in ${LOGS_DIRS[@]}
+    for d in "${LOGS_DIRS[@]}"
     do
         local item=$DIR_LOGS/$d
         if [[ -d $item ]]; then
             message "处理目录 chmod 777 ${item}"
-            chmod 777 $item
+            chmod 777 "$item"
         fi
     done
 }
@@ -95,29 +100,29 @@ init_services() {
     fi
 
     message "遍历目录 ${p}"
-    for file in `ls -A ${p}`
+    for file in "${p}"/*
     do
         local item=$p/$file
         if [[ -d $item ]]; then
             message "处理目录 chmod 777 ${item}"
-            chmod 777 $item
+            chmod 777 "$item"
             init_services $item
         elif [[ -f $item ]]; then
             message "处理文件 chmod 644 ${item}"
-            chmod 644 $item
+            chmod 644 "$item"
         fi
     done
 }
 
 # 清空数据
 clean_data() {
-    for d in ${DATA_DIRS[@]}
+    for d in "${DATA_DIRS[@]}"
     do
         local item=$DIR_DATA/$d
         local item_ignore=$item/.gitignore
         if [[ -d $item && -f $item_ignore  ]]; then
             message "正在遍历 ${item}"
-            for file in `ls -A ${item}`
+            for file in "${item}"/*
             do
                 if [[ ".gitignore" != "$file" ]]; then
                     message "正在删除 rm -rf ${item}/${file}"
@@ -130,13 +135,13 @@ clean_data() {
 
 # 清空数据
 clean_logs() {
-    for d in ${LOGS_DIRS[@]}
+    for d in "${LOGS_DIRS[@]}"
     do
         local item=$DIR_LOGS/$d
         local item_ignore=$item/.gitignore
         if [[ -d $item && -f $item_ignore  ]]; then
             message "正在遍历 ${item}"
-            for file in `ls -A ${item}`
+            for file in "${item}"/*
             do
                 if [[ ".gitignore" != "$file" ]]; then
                     message "正在删除 rm -rf ${item}/${file}"
